@@ -31,12 +31,36 @@ pub struct Query;
 
 #[Object]
 impl Query {
-    async fn entries (&self, ctx: &Context<'_>,) -> Vec<Entry> {
+    async fn entries(&self, ctx: &Context<'_>,) -> Vec<Entry> {
+        println!("handling entries query");
         let pool = ctx.data_unchecked::<SqlitePool>();
         query(
             r#"
             select id, email, pubkey from key;
             "#)
+            .map(|row: SqliteRow| {
+                Entry {
+                    id: row.get(0),
+                    email: row.get(1),
+                    pubkey: row.get(2),
+                }
+            })
+            .fetch_all(pool)
+            .await
+            .unwrap_or_default()
+    }
+
+    async fn search(
+        &self, ctx: &Context<'_>, email: String)
+        -> Vec<Entry> {
+        println!("handling search query");
+        let pool = ctx.data_unchecked::<SqlitePool>();
+        query(
+            r#"
+            select id, email, pubkey from key
+            where email like '%$1%';
+            "#)
+            .bind(email)
             .map(|row: SqliteRow| {
                 Entry {
                     id: row.get(0),
@@ -57,6 +81,7 @@ impl Mutation {
     async fn create_entry(
         &self, ctx: &Context<'_>, email: String, pubkey: String)
         -> i32 {
+            println!("handling create_entry mutation");
             let pool = ctx.data_unchecked::<SqlitePool>();
             let res = query(
                 r#"

@@ -8,7 +8,7 @@ use axum::{
     Json,
 };
 
-use crate::model::GQLSchema;
+use crate::resolver::GQLSchema;
 
 pub async fn graphql_handler(
     schema: Extension<GQLSchema>,
@@ -17,7 +17,7 @@ pub async fn graphql_handler(
 }
 
 pub async fn graphql_playground() -> impl IntoResponse {
-    Html(playground_source(GraphQLPlaygroundConfig::new("/")))
+    Html(playground_source(GraphQLPlaygroundConfig::new("/gql")))
 }
 
 pub async fn health() -> impl IntoResponse {

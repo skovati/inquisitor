@@ -6,10 +6,10 @@ use axum::{Router, Extension, routing::get};
 use sqlx::sqlite::SqlitePool;
 use sqlx::query;
 
-mod handler;
-mod model;
+mod resolver;
+mod routes;
 
-use crate::model::{Query, Mutation};
+use crate::resolver::{Query, Mutation};
 
 const DB_STR: &str = "db/inquisitor.db";
 
@@ -48,10 +48,10 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         .route("/gql",
-            get(handler::graphql_playground)
-            .post(handler::graphql_handler))
-        .route("/health", get(handler::health))
-        .route("/", get(handler::index))
+            get(routes::graphql_playground)
+            .post(routes::graphql_handler))
+        .route("/health", get(routes::health))
+        .route("/", get(routes::index))
         .layer(Extension(schema));
 
     println!("serving playground @ http://localhost:8080/gql");
