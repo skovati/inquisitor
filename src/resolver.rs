@@ -53,14 +53,14 @@ impl Query {
     async fn search(
         &self, ctx: &Context<'_>, email: String)
         -> Vec<Entry> {
-        println!("handling search query");
+        println!("handling search query of {}", email);
         let pool = ctx.data_unchecked::<SqlitePool>();
         query(
             r#"
             select id, email, pubkey from key
-            where email like '%$1%';
+            where email like $1;
             "#)
-            .bind(email)
+            .bind(format!("%{}%", email))
             .map(|row: SqliteRow| {
                 Entry {
                     id: row.get(0),
@@ -81,7 +81,7 @@ impl Mutation {
     async fn create_entry(
         &self, ctx: &Context<'_>, email: String, pubkey: String)
         -> i32 {
-            println!("handling create_entry mutation");
+            println!("handling create_entry mutation: {} -> {}", email, pubkey);
             let pool = ctx.data_unchecked::<SqlitePool>();
             let res = query(
                 r#"
